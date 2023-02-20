@@ -13,7 +13,7 @@ import {
 import moment from 'moment';
 import HeaderBar from '../../components/HeaderBar/HeaderBar';
 import { useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from 'lib/firebase';
 
 const EditMessage = () => {
@@ -23,7 +23,7 @@ const EditMessage = () => {
   const [msg, setMessage] = React.useState(Object.create(null));
   const accountId = '/Accounts/JQ2U2j0TF7okzqqZOy4I';
   const navigate = useNavigate();
-  const onSubmit = (values) => {
+  const onSubmit = async (values) => {
     const { message, date, time } = values;
     const scheduledAt = moment(
       date.format('YYYY-MM-DD') + ' ' + time.format('hh:mm: A'),
@@ -33,25 +33,44 @@ const EditMessage = () => {
       return;
     }
 
-    console.log({ message, scheduledAt });
-    messageApi.success('Message scheduled successfully', 3, openHome);
+    try {
+      const docRef = doc(db, accountId);
+      await updateDoc(docRef, {
+        scheduled: {
+          message,
+          scheduled_at: scheduledAt.valueOf(),
+        },
+      });
+      messageApi.success('Message scheduled successfully', 3, openHome);
+    } catch (e) {
+      console.log(e);
+      messageApi.error('Error scheduling message :(');
+    }
   };
   const openHome = () => {
     navigate('/home');
   };
-  const fetchAccount = React.useCallback(async () => {
+  const fetchScheduledMessage = React.useCallback(async () => {
     try {
       setLoading(true);
       const docRef = doc(db, accountId);
       const docSnap = await getDoc(docRef);
+      const scheduledMsg = docSnap.data().scheduled || {};
       setLoading(false);
-      setMessage(docSnap.data().scheduled);
+      setMessage(scheduledMsg);
+      if (scheduledMsg) {
+        form.setFieldsValue({
+          message: scheduledMsg.message,
+          date: moment(scheduledMsg.scheduled_at),
+          time: moment(scheduledMsg.scheduled_at),
+        });
+      }
     } catch (e) {
       console.log(e);
       setLoading(false);
       message.error('Error fetching subscribers list :(');
     }
-  }, []);
+  }, [form]);
   // Write function to go back to previous page
   const goBack = () => {
     console.log('go back');
@@ -60,8 +79,8 @@ const EditMessage = () => {
     return current && current < moment().startOf('day');
   };
   React.useEffect(() => {
-    fetchAccount();
-  }, [fetchAccount]);
+    fetchScheduledMessage();
+  }, [fetchScheduledMessage]);
 
   return (
     <div>
@@ -134,7 +153,7 @@ const EditMessage = () => {
           <Row gutter={16}>
             <Col span={24}>
               <Form.Item>
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={loading}>
                   {msg.message ? 'Update' : 'Schedule'}
                 </Button>
               </Form.Item>
