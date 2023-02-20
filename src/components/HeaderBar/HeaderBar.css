@@ -6,9 +6,9 @@
   width: 100%;
   padding: 10px;
   box-sizing: border-box;
-  background-color: white;
+  /**Create a light background color in the blue hue */
+  background-color: #ddeaf8;
   border: 1px solid #ccc;
-  /* Create a light shadow under this box that is 10% opacity */
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
   z-index: 100;
 }

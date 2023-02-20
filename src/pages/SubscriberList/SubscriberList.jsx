@@ -1,7 +1,15 @@
-// Create a new page in src/pages/SubscriberList/SubscriberList.jsx similar to Home.jsx
 import React from 'react';
 import './SubscriberList.css';
-import { Input, Row, Col, Button, Space, message, List } from 'antd';
+import {
+  Input,
+  Row,
+  Col,
+  Button,
+  Space,
+  message,
+  List,
+  Typography,
+} from 'antd';
 import ParseToHTML from 'html-react-parser';
 import { debounce } from 'lodash';
 import moment from 'moment';
@@ -105,6 +113,9 @@ const SubscriberList = () => {
     <div>
       <HeaderBar title="Subscriber List" />
       <Col span={24} className="home-container subscriber-page">
+        <Typography.Title level={4}>
+          {account.subscribers_count} total subscribers
+        </Typography.Title>
         <Row gutter={16}>
           <Col span={24}>
             <Input.Search
@@ -116,7 +127,7 @@ const SubscriberList = () => {
             />
           </Col>
         </Row>
-        <Space style={{ marginTop: 16, marginBottom: 16 }}>
+        <Space direction="vertical" style={{ marginTop: 16, marginBottom: 16 }}>
           <Link to="/subscribers/add">
             <Button>Add</Button>
           </Link>
