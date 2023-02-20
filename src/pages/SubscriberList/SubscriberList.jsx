@@ -42,7 +42,8 @@ const SubscriberList = () => {
       );
       const querySnapshot = await getDocs(q);
       const data = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
+        id: '/' + doc.ref.path,
+        uid: doc.id,
         ...doc.data(),
       }));
       setLoading(false);
@@ -94,7 +95,7 @@ const SubscriberList = () => {
           renderItem={(item) => (
             <List.Item>
               <List.Item.Meta
-                title={<Link to={`/subscribers/${item.id}`}>{item.name}</Link>}
+                title={<Link to={`/subscribers/${item.uid}`}>{item.name}</Link>}
                 description={`${formatPhoneNumber(
                   item.phone_number,
                 )} - Added ${moment(item.created_at).format('MMM Do, YYYY')}`}

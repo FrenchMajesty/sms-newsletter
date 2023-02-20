@@ -31,9 +31,6 @@ const Home = () => {
   const [accountLoading, setAccountLoading] = React.useState(false);
   const [account, setAccount] = React.useState(Object.create(null));
   const accountId = '/Accounts/JQ2U2j0TF7okzqqZOy4I';
-  const onSubmit = (values) => {
-    console.log(values);
-  };
   const fetchAccount = React.useCallback(async () => {
     try {
       setAccountLoading(true);
@@ -74,10 +71,6 @@ const Home = () => {
       message.error('Error fetching subscribers list :(');
     }
   }, []);
-  // Write function to go back to previous page
-  const goBack = () => {
-    console.log('go back');
-  };
   React.useEffect(() => {
     fetchSubscribers();
     fetchAccount();

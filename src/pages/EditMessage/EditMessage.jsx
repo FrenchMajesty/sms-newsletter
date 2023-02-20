@@ -42,14 +42,12 @@ const EditMessage = () => {
           scheduled_at: scheduledAt.valueOf(),
         },
       });
-      messageApi.success('Message scheduled successfully', 3, openHome);
+      messageApi.success('Message scheduled successfully');
+      navigate('/home');
     } catch (e) {
       console.log(e);
       messageApi.error('Error scheduling message :(');
     }
-  };
-  const openHome = () => {
-    navigate('/home');
   };
   const fetchScheduledMessage = React.useCallback(async () => {
     try {
