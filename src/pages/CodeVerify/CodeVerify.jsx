@@ -34,6 +34,7 @@ const CodeVerify = () => {
       const docRef = doc(db, account.id);
       await updateDoc(docRef, { auth_id: authId });
       account.auth_id = authId;
+      account.login_at = new Date().valueOf();
       return account;
     } catch (e) {
       throw e;
@@ -46,7 +47,7 @@ const CodeVerify = () => {
       const account = await linkAuthToUserAccount(user.uid, user.phoneNumber);
       localStorage.setItem('account', JSON.stringify(account));
       setLoading(false);
-      navigate('/home');
+      navigate('/home', { replace: true });
     } catch (e) {
       console.log(e);
       setLoading(false);

@@ -25,7 +25,7 @@ const Auth = () => {
       setLoading(false);
       navigate('/code-verify');
     } catch (error) {
-      console.log(error);
+      console.log('Failed to sign in', error);
       setLoading(false);
       message.error(
         'Error while sending SMS. Please check your number and try again.',
