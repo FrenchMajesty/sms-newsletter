@@ -1,10 +1,15 @@
 import React from 'react';
 import './MessageHistory.css';
-import { Col, Typography, Space, Card } from 'antd';
+import { Col, Typography, Space, Card, message, Empty } from 'antd';
 import moment from 'moment';
 import HeaderBar from '../../components/HeaderBar/HeaderBar';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { db } from 'lib/firebase';
 
 const MessageHistory = () => {
+  const accountId = '/Accounts/JQ2U2j0TF7okzqqZOy4I';
+  const [loading, setLoading] = React.useState(false);
+  const [msgHistory, setMsgHistory] = React.useState([]);
   const renderTimestampText = (scheduled_at) => {
     const readableTime = moment(scheduled_at).format('MMM Do, YYYY [@] h:mm A');
     if (moment(scheduled_at).isBefore(moment())) {
@@ -15,40 +20,50 @@ const MessageHistory = () => {
   const isFuture = (scheduled_at) => {
     return moment(scheduled_at).isAfter(moment());
   };
-  const data = [
-    {
-      id: 129,
-      content:
-        'This is another test message. I believe that I can fly and anything I set my mind to do, I can accomplish.',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      scheduled_at: moment().add(10, 'days').toISOString(),
-    },
-    {
-      id: 129,
-      content: 'This is a test message',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      scheduled_at: new Date().toISOString(),
-    },
-  ];
+  const fetchHistory = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const q = query(
+        collection(db, `${accountId}/history`),
+        orderBy('scheduled_at', 'desc'),
+      );
+      const querySnapshot = await getDocs(q);
+      const data = querySnapshot.docs.map((doc) => ({
+        id: '/' + doc.ref.path,
+        uid: doc.id,
+        ...doc.data(),
+      }));
+      setLoading(false);
+      setMsgHistory(data);
+    } catch (e) {
+      console.log(e);
+      setLoading(false);
+      message.error('Error fetching message history');
+    }
+  }, []);
+  React.useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
 
   return (
     <div>
       <HeaderBar title="Message History" />
       <Col span={24} className="home-container">
-        <Space direction="vertical">
-          {data.map((item) => (
+        <Space direction="vertical" style={{ width: '100%' }}>
+          {msgHistory.map((item) => (
             <Card
               hoverable={isFuture(item.scheduled_at)}
               className={isFuture(item.scheduled_at) ? 'future-message' : ''}
             >
-              <Typography.Title level={5}>{item.content}</Typography.Title>
+              <Typography.Title level={5}>{item.message}</Typography.Title>
               <Typography.Text type="secondary">
                 {renderTimestampText(item.scheduled_at)}
               </Typography.Text>
             </Card>
           ))}
+          {msgHistory.length === 0 && !loading ? (
+            <Empty description="No messages have been sent yet" />
+          ) : null}
         </Space>
       </Col>
     </div>
