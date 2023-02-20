@@ -26,7 +26,18 @@ import {
   getDoc,
 } from 'firebase/firestore';
 import { ArrowLeftOutlined } from '@ant-design/icons';
+import algoliasearch from 'algoliasearch';
 import { db } from 'lib/firebase';
+
+// TODO: Move to .env
+const REACT_APP_ALGOLIA_APP_ID = 'F7IPCQJFCH';
+const REACT_APP_ALGOLIA_SEARCH_KEY = '11700f6a95e0d3da5899191bb02bd2fd';
+const REACT_APP_ALGOLIA_INDEX = 'dev_subscriberlist';
+const algoliaClient = algoliasearch(
+  REACT_APP_ALGOLIA_APP_ID,
+  REACT_APP_ALGOLIA_SEARCH_KEY,
+);
+const index = algoliaClient.initIndex(REACT_APP_ALGOLIA_INDEX);
 
 const EditSubscriber = () => {
   const { id } = useParams();
@@ -59,28 +70,45 @@ const EditSubscriber = () => {
       message.error('Sorry, something went wrong :(');
     }
   };
-  const updateSubscriber = (values) => {
-    return updateDoc(doc(db, `${account.id}/subscribers`, id), {
+  const updateSubscriber = async (values) => {
+    const data = {
       uid: id,
       name: values.name,
       phone_number: values.phone_number,
       updated_at: new Date().valueOf(),
-    });
+    };
+    await updateDoc(doc(db, `${account.id}/subscribers`, id), data);
+    return index
+      .partialUpdateObject({
+        objectID: id,
+        ...data,
+      })
+      .wait();
   };
   const createSubscriber = async (values) => {
-    const ref = await addDoc(collection(db, `${account.id}/subscribers`), {
+    const data = {
       name: values.name,
       phone_number: values.phone_number,
       created_at: new Date().valueOf(),
       updated_at: new Date().valueOf(),
-    });
-    updateDoc(doc(db, `${account.id}/subscribers`, ref.id), {
+    };
+    const ref = await addDoc(collection(db, `${account.id}/subscribers`), data);
+    const setUid = updateDoc(doc(db, `${account.id}/subscribers`, ref.id), {
       uid: ref.id,
     });
-    updateDoc(doc(db, account.id), {
+    const updateCount = updateDoc(doc(db, account.id), {
       subscribers_count: increment(1),
     });
-    return ref;
+    const createAlgoliaObject = index
+      .saveObject({
+        objectID: ref.id,
+        id: '/' + ref.path,
+        uid: ref.id,
+        account_id: account.id,
+        ...data,
+      })
+      .wait();
+    return Promise.all([setUid, updateCount, createAlgoliaObject]);
   };
   const validateNumberIsUnique = async (number) => {
     try {
@@ -101,6 +129,7 @@ const EditSubscriber = () => {
     try {
       setDeleting(true);
       await deleteDoc(doc(db, `${account.id}/subscribers`, id));
+      await index.deleteObject(id);
       setDeleting(false);
       message.success('Subscriber removed successfully');
       navigate('/subscribers');

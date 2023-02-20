@@ -39,7 +39,6 @@ const SubscriberList = () => {
   const fetchSubscribers = React.useCallback(async () => {
     try {
       setLoading(true);
-      //  TODO: Remove hardcoded account ID
       const q = query(
         collection(db, `${account.id}/subscribers`),
         orderBy('created_at', 'desc'),
