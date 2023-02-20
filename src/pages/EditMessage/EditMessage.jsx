@@ -13,9 +13,15 @@ import {
 import moment from 'moment';
 import HeaderBar from '../../components/HeaderBar/HeaderBar';
 import { useNavigate } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from 'lib/firebase';
 
 const EditMessage = () => {
+  const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
+  const [loading, setLoading] = React.useState(false);
+  const [msg, setMessage] = React.useState(Object.create(null));
+  const accountId = '/Accounts/JQ2U2j0TF7okzqqZOy4I';
   const navigate = useNavigate();
   const onSubmit = (values) => {
     const { message, date, time } = values;
@@ -33,6 +39,19 @@ const EditMessage = () => {
   const openHome = () => {
     navigate('/home');
   };
+  const fetchAccount = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const docRef = doc(db, accountId);
+      const docSnap = await getDoc(docRef);
+      setLoading(false);
+      setMessage(docSnap.data().scheduled);
+    } catch (e) {
+      console.log(e);
+      setLoading(false);
+      message.error('Error fetching subscribers list :(');
+    }
+  }, []);
   // Write function to go back to previous page
   const goBack = () => {
     console.log('go back');
@@ -40,24 +59,23 @@ const EditMessage = () => {
   const disabledDate = (current) => {
     return current && current < moment().startOf('day');
   };
-  const data = {
-    id: 129,
-    message: 'Hello, this is a test message',
-    scheduled_at: new Date().toISOString(),
-  };
+  React.useEffect(() => {
+    fetchAccount();
+  }, [fetchAccount]);
 
   return (
     <div>
       {contextHolder}
-      <HeaderBar title={`${data.id ? 'Edit' : 'Schedule'} Message`} />
+      <HeaderBar title={`${msg.message ? 'Edit' : 'Schedule'} Message`} />
       <Col span={24} className="home-container">
-        <Form onFinish={onSubmit}>
+        <Form form={form} onFinish={onSubmit}>
           <Row gutter={16}>
             <Col span={24}>
               <Form.Item
                 label="Message"
                 name="message"
                 required
+                initialValue={msg ? msg.message : ''}
                 rules={[
                   { required: true, message: 'Message is required' },
                   {
@@ -79,6 +97,7 @@ const EditMessage = () => {
                 label="Date"
                 name="date"
                 required
+                initialValue={msg ? msg.scheduled_at : ''}
                 rules={[
                   { required: true, message: 'Delivery date is required' },
                   { type: 'date', message: 'The date is incorrect' },
@@ -96,6 +115,7 @@ const EditMessage = () => {
                 label="Time"
                 name="time"
                 required
+                initialValue={msg ? msg.scheduled_at : ''}
                 rules={[
                   { required: true, message: 'Delivery time is required' },
                   { type: 'date', message: 'The time is incorrect' },
@@ -115,7 +135,7 @@ const EditMessage = () => {
             <Col span={24}>
               <Form.Item>
                 <Button type="primary" htmlType="submit">
-                  {data.id ? 'Update' : 'Schedule'}
+                  {msg.message ? 'Update' : 'Schedule'}
                 </Button>
               </Form.Item>
             </Col>

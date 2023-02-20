@@ -17,15 +17,42 @@ import {
 import moment from 'moment';
 import HeaderBar from '../../components/HeaderBar/HeaderBar';
 import { useNavigate, Link } from 'react-router-dom';
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { db } from 'lib/firebase';
 
 const SubscriberList = () => {
+  const [loading, setLoading] = React.useState(false);
+  const [data, setData] = React.useState([]);
   const onSearchChange = (e) => {
     // TODO: Debounce this
     triggerSearch(e.target.value);
   };
   const triggerSearch = (term) => {
+    term = term.trim();
+    if (term.length < 2) return;
     console.log('run a search:', term);
   };
+  const fetchSubscribers = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      //  TODO: Remove hardcoded account ID
+      const q = query(
+        collection(db, '/Accounts/JQ2U2j0TF7okzqqZOy4I/subscribers'),
+        orderBy('created_at', 'desc'),
+      );
+      const querySnapshot = await getDocs(q);
+      const data = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setLoading(false);
+      setData(data);
+    } catch (e) {
+      console.log(e);
+      setLoading(false);
+      message.error('Error fetching subscribers list :(');
+    }
+  }, []);
   const formatPhoneNumber = (number) => {
     const cleaned = ('' + number).replace(/\D/g, '');
     const match = cleaned.match(/^(1|)?(\d{3})(\d{3})(\d{4})$/);
@@ -35,26 +62,9 @@ const SubscriberList = () => {
     }
     return null;
   };
-  const data = [
-    {
-      id: 129,
-      name: 'John Doe',
-      number: '+11234445050',
-      created_at: new Date().toISOString(),
-    },
-    {
-      id: 999,
-      name: 'John Doe',
-      number: '+11234445050',
-      created_at: new Date().toISOString(),
-    },
-    {
-      id: 31123,
-      name: 'John Doe',
-      number: '+11234445050',
-      created_at: new Date().toISOString(),
-    },
-  ];
+  React.useEffect(() => {
+    fetchSubscribers();
+  }, [fetchSubscribers]);
 
   return (
     <div>
@@ -79,13 +89,14 @@ const SubscriberList = () => {
         <List
           itemLayout="horizontal"
           dataSource={data}
+          loading={loading}
           className="subscriber-list"
           renderItem={(item) => (
             <List.Item>
               <List.Item.Meta
                 title={<Link to={`/subscribers/${item.id}`}>{item.name}</Link>}
                 description={`${formatPhoneNumber(
-                  item.number,
+                  item.phone_number,
                 )} - Added ${moment(item.created_at).format('MMM Do, YYYY')}`}
               />
             </List.Item>
