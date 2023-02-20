@@ -11,6 +11,7 @@ import EditSubscriber from 'pages/EditSubscriber/EditSubscriber';
 import ErrorPage from 'pages/ErrorPage/ErrorPage';
 import MessageHistory from 'pages/MessageHistory/MessageHistory';
 import { auth } from 'lib/firebase';
+import { message } from 'antd';
 
 const RestrictAuth = ({ children }) => {
   const location = useLocation();
@@ -39,6 +40,18 @@ const RestrictGuest = ({ children }) => {
   }
 
   return children;
+};
+
+const Logout = () => {
+  const signUserOut = React.useCallback(() => {
+    message.success('You have been logged out');
+    auth.signOut();
+    localStorage.removeItem('account');
+  }, []);
+  React.useEffect(() => {
+    signUserOut();
+  }, [signUserOut]);
+  return <Navigate to="/login" replace />;
 };
 
 const router = createBrowserRouter([
@@ -114,6 +127,10 @@ const router = createBrowserRouter([
         ),
       },
     ],
+  },
+  {
+    path: '/log-out',
+    element: <Logout />,
   },
 ]);
 
