@@ -19,12 +19,13 @@ import {
   query,
   doc,
   orderBy,
+  increment,
   limit,
   where,
   getDocs,
   deleteDoc,
   addDoc,
-  setDoc,
+  updateDoc,
   getDoc,
 } from 'firebase/firestore';
 import { ArrowLeftOutlined } from '@ant-design/icons';
@@ -49,15 +50,20 @@ const EditSubscriber = () => {
       } else {
         await updateSubscriber(values);
       }
-      message.success(`Subscriber ${id ? 'updated' : 'created'} successfully`);
-      navigate('/subscribers');
+      message.success(
+        `Subscriber ${id ? 'updated' : 'created'} successfully`,
+        2,
+        () => {
+          navigate('/subscribers');
+        },
+      );
     } catch (error) {
       console.log(error);
       message.error('Sorry, something went wrong :(');
     }
   };
   const updateSubscriber = (values) => {
-    return setDoc(doc(db, `${accountId}/subscribers`, id), {
+    return updateDoc(doc(db, `${accountId}/subscribers`, id), {
       uid: id,
       name: values.name,
       phone_number: values.phone_number,
@@ -71,7 +77,12 @@ const EditSubscriber = () => {
       created_at: new Date().valueOf(),
       updated_at: new Date().valueOf(),
     });
-    setDoc(ref, { uid: ref.id, id: '/' + ref.path }, { merge: true });
+    updateDoc(doc(db, `${accountId}/subscribers`, ref.id), {
+      uid: ref.id,
+    });
+    updateDoc(doc(db, accountId), {
+      subscribers_count: increment(1),
+    });
     return ref;
   };
   const validateNumberIsUnique = async (number) => {

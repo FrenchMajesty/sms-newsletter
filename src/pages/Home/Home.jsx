@@ -43,6 +43,7 @@ const Home = () => {
       };
       setAccountLoading(false);
       setAccount(data);
+      localStorage.setItem('account', JSON.stringify(data));
     } catch (e) {
       console.log(e);
       setAccountLoading(false);
