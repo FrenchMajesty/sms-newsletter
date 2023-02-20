@@ -14,31 +14,91 @@ import {
 import moment from 'moment';
 import HeaderBar from '../../components/HeaderBar/HeaderBar';
 import { useNavigate, Link, useParams } from 'react-router-dom';
+import {
+  collection,
+  query,
+  doc,
+  orderBy,
+  limit,
+  where,
+  getDocs,
+  deleteDoc,
+  addDoc,
+  setDoc,
+  getDoc,
+} from 'firebase/firestore';
 import { ArrowLeftOutlined } from '@ant-design/icons';
+import { db } from 'lib/firebase';
 
 const EditSubscriber = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const [loading, setLoading] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
+  const accountId = '/Accounts/JQ2U2j0TF7okzqqZOy4I';
   const onFinish = async (values) => {
-    console.log('Success:', values);
     try {
-      if (!(await validateNumberIsUnique(values.number))) return;
-      message.success('Subscriber updated successfully');
-      //navigate('/subscribers');
+      values.phone_number = '+1' + values.phone_number.replace('+1', '');
+      if (!(await validateNumberIsUnique(values.phone_number))) {
+        message.error('This phone number is already registered');
+        return;
+      }
+      if (!id) {
+        await createSubscriber(values);
+      } else {
+        await updateSubscriber(values);
+      }
+      message.success(`Subscriber ${id ? 'updated' : 'created'} successfully`);
+      navigate('/subscribers');
     } catch (error) {
       console.log(error);
       message.error('Sorry, something went wrong :(');
     }
   };
-  const validateNumberIsUnique = async (number) => {
-    // TODO: Check Firestore
-    return false;
+  const updateSubscriber = (values) => {
+    return setDoc(doc(db, `${accountId}/subscribers`, id), {
+      uid: id,
+      name: values.name,
+      phone_number: values.phone_number,
+      updated_at: new Date().valueOf(),
+    });
   };
-  const onDelete = () => {
-    console.log('Delete user with ID:', data.id);
-    message.success('Subscriber removed successfully');
-    navigate('/subscribers');
+  const createSubscriber = async (values) => {
+    const ref = await addDoc(collection(db, `${accountId}/subscribers`), {
+      name: values.name,
+      phone_number: values.phone_number,
+      created_at: new Date().valueOf(),
+      updated_at: new Date().valueOf(),
+    });
+    setDoc(ref, { uid: ref.id, id: '/' + ref.path }, { merge: true });
+    return ref;
+  };
+  const validateNumberIsUnique = async (number) => {
+    try {
+      const q = query(
+        collection(db, `${accountId}/subscribers`),
+        where('uid', '!=', id || ''),
+        where('phone_number', '==', number),
+        limit(1),
+      );
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.size === 0;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
+  };
+  const onDelete = async () => {
+    try {
+      console.log('Delete user with ID:', id);
+      await deleteDoc(doc(db, `${accountId}/subscribers`, id));
+      message.success('Subscriber removed successfully');
+      navigate('/subscribers');
+    } catch (e) {
+      console.log(e);
+      message.error('Sorry, something went wrong :(');
+    }
   };
   const formatPhoneNumber = (number) => {
     const cleaned = ('' + number).replace(/\D/g, '');
@@ -49,15 +109,38 @@ const EditSubscriber = () => {
     }
     return null;
   };
+  const loadSubscriberDetails = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const docRef = doc(db, accountId, 'subscribers', id);
+      const docSnap = await getDoc(docRef);
+      const data = {
+        id: '/' + docSnap.ref.path,
+        uid: docSnap.id,
+        ...docSnap.data(),
+      };
+      setLoading(false);
+      form.setFieldsValue({
+        name: data.name,
+        phone_number: formatPhoneNumber(data.phone_number),
+      });
+    } catch (e) {
+      console.log(e);
+      setLoading(false);
+      message.error(
+        'Sorry, something went wrong while loading this subscriber',
+      );
+      navigate('/subscribers');
+    }
+  }, [form]);
   const goBack = () => {
     navigate(-1);
   };
-  const data = {
-    id: 129,
-    name: 'John Doe',
-    number: '+11234445050',
-    created_at: new Date().toISOString(),
-  };
+  React.useEffect(() => {
+    if (id) {
+      loadSubscriberDetails();
+    }
+  }, [id, loadSubscriberDetails]);
 
   return (
     <div>
@@ -70,19 +153,7 @@ const EditSubscriber = () => {
       <Col span={24} className="home-container">
         <Row gutter={16}>
           <Col span={24}>
-            <Form
-              form={form}
-              name="edit-subscriber"
-              onFinish={onFinish}
-              initialValues={
-                id && data
-                  ? {
-                      name: data.name,
-                      number: formatPhoneNumber(data.number),
-                    }
-                  : null
-              }
-            >
+            <Form form={form} name="edit-subscriber" onFinish={onFinish}>
               <Form.Item
                 label="Name"
                 name="name"
@@ -96,7 +167,7 @@ const EditSubscriber = () => {
               </Form.Item>
               <Form.Item
                 label="Phone Number"
-                name="number"
+                name="phone_number"
                 rules={[
                   { required: true, message: 'Phone number is required' },
                   {
@@ -109,19 +180,23 @@ const EditSubscriber = () => {
               </Form.Item>
               <Form.Item>
                 <Space>
-                  <Button type="primary" htmlType="submit">
+                  <Button type="primary" htmlType="submit" loading={loading}>
                     {id ? 'Update' : 'Add'}
                   </Button>
                   {id ? (
                     <Popconfirm
-                      title={`Remove ${data.name}`}
+                      title={`Remove ${
+                        form.getFieldValue('name') || 'Subscriber'
+                      }`}
                       description="Are you sure to remove from your list?"
                       onConfirm={onDelete}
                       okText="Yes"
                       cancelText="No"
                       placement="bottom"
                     >
-                      <Button danger>Remove</Button>
+                      <Button danger loading={deleting}>
+                        Remove
+                      </Button>
                     </Popconfirm>
                   ) : null}
                 </Space>
