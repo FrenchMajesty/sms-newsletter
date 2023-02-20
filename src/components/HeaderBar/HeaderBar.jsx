@@ -3,7 +3,11 @@ import { Row, Col, Typography } from 'antd';
 import DrawerMenu from 'components/DrawerMenu/DrawerMenu';
 import './HeaderBar.css';
 
-const HeaderBar = ({ title = 'Welcome, John' }) => {
+const HeaderBar = ({ title = '' }) => {
+  const account = JSON.parse(localStorage.getItem('account'));
+  const userName = account.name;
+  const titleText = title || `Welcome, ${userName}`;
+
   return (
     <header className="header-bar">
       <Row align="middle" justify="space-between">
@@ -11,7 +15,7 @@ const HeaderBar = ({ title = 'Welcome, John' }) => {
           <DrawerMenu />
         </Col>
         <Typography.Title level={3} style={{ margin: 0 }}>
-          {title}
+          {titleText}
         </Typography.Title>
         <Col span={4}></Col>
       </Row>

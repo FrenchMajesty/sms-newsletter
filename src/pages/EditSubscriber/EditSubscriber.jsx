@@ -6,19 +6,16 @@ import {
   Col,
   Form,
   Button,
-  Typography,
   Space,
   message,
   Popconfirm,
 } from 'antd';
-import moment from 'moment';
 import HeaderBar from '../../components/HeaderBar/HeaderBar';
-import { useNavigate, Link, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   collection,
   query,
   doc,
-  orderBy,
   increment,
   limit,
   where,
@@ -37,7 +34,7 @@ const EditSubscriber = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
-  const accountId = '/Accounts/JQ2U2j0TF7okzqqZOy4I';
+  const account = JSON.parse(localStorage.getItem('account'));
   const onFinish = async (values) => {
     try {
       values.phone_number = '+1' + values.phone_number.replace('+1', '');
@@ -63,7 +60,7 @@ const EditSubscriber = () => {
     }
   };
   const updateSubscriber = (values) => {
-    return updateDoc(doc(db, `${accountId}/subscribers`, id), {
+    return updateDoc(doc(db, `${account.id}/subscribers`, id), {
       uid: id,
       name: values.name,
       phone_number: values.phone_number,
@@ -71,16 +68,16 @@ const EditSubscriber = () => {
     });
   };
   const createSubscriber = async (values) => {
-    const ref = await addDoc(collection(db, `${accountId}/subscribers`), {
+    const ref = await addDoc(collection(db, `${account.id}/subscribers`), {
       name: values.name,
       phone_number: values.phone_number,
       created_at: new Date().valueOf(),
       updated_at: new Date().valueOf(),
     });
-    updateDoc(doc(db, `${accountId}/subscribers`, ref.id), {
+    updateDoc(doc(db, `${account.id}/subscribers`, ref.id), {
       uid: ref.id,
     });
-    updateDoc(doc(db, accountId), {
+    updateDoc(doc(db, account.id), {
       subscribers_count: increment(1),
     });
     return ref;
@@ -88,7 +85,7 @@ const EditSubscriber = () => {
   const validateNumberIsUnique = async (number) => {
     try {
       const q = query(
-        collection(db, `${accountId}/subscribers`),
+        collection(db, `${account.id}/subscribers`),
         where('uid', '!=', id || ''),
         where('phone_number', '==', number),
         limit(1),
@@ -102,12 +99,14 @@ const EditSubscriber = () => {
   };
   const onDelete = async () => {
     try {
-      console.log('Delete user with ID:', id);
-      await deleteDoc(doc(db, `${accountId}/subscribers`, id));
+      setDeleting(true);
+      await deleteDoc(doc(db, `${account.id}/subscribers`, id));
+      setDeleting(false);
       message.success('Subscriber removed successfully');
       navigate('/subscribers');
     } catch (e) {
       console.log(e);
+      setDeleting(false);
       message.error('Sorry, something went wrong :(');
     }
   };
@@ -123,7 +122,7 @@ const EditSubscriber = () => {
   const loadSubscriberDetails = React.useCallback(async () => {
     try {
       setLoading(true);
-      const docRef = doc(db, accountId, 'subscribers', id);
+      const docRef = doc(db, account.id, 'subscribers', id);
       const docSnap = await getDoc(docRef);
       const data = {
         id: '/' + docSnap.ref.path,
@@ -143,7 +142,7 @@ const EditSubscriber = () => {
       );
       navigate('/subscribers');
     }
-  }, [form]);
+  }, [form, account.id, id, navigate]);
   const goBack = () => {
     navigate(-1);
   };

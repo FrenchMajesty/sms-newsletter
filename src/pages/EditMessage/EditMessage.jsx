@@ -22,7 +22,7 @@ const EditMessage = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [loading, setLoading] = React.useState(false);
   const [msg, setMessage] = React.useState(Object.create(null));
-  const accountId = '/Accounts/JQ2U2j0TF7okzqqZOy4I';
+  const account = JSON.parse(localStorage.getItem('account'));
   const navigate = useNavigate();
   const onSubmit = async (values) => {
     const { message, date, time } = values;
@@ -35,7 +35,7 @@ const EditMessage = () => {
     }
 
     try {
-      const docRef = doc(db, accountId);
+      const docRef = doc(db, account.id);
       await updateDoc(docRef, {
         scheduled: {
           message,
@@ -52,7 +52,7 @@ const EditMessage = () => {
   const fetchScheduledMessage = React.useCallback(async () => {
     try {
       setLoading(true);
-      const docRef = doc(db, accountId);
+      const docRef = doc(db, account.id);
       const docSnap = await getDoc(docRef);
       const scheduledMsg = docSnap.data().scheduled || {};
       setLoading(false);

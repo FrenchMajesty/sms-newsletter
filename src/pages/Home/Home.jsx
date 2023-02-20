@@ -1,60 +1,21 @@
 import React from 'react';
 import './Home.css';
-import {
-  Input,
-  Row,
-  Col,
-  Form,
-  Button,
-  Typography,
-  Space,
-  List,
-  message,
-} from 'antd';
+import { Row, Col, Button, Typography, Space, List, message } from 'antd';
 import HeaderBar from '../../components/HeaderBar/HeaderBar';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
-import {
-  collection,
-  query,
-  doc,
-  orderBy,
-  limit,
-  getDocs,
-  getDoc,
-} from 'firebase/firestore';
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from 'lib/firebase';
 
 const Home = () => {
   const [recentSubscribers, setRecentSubscribers] = React.useState([]);
   const [subscribersLoading, setSubscribersLoading] = React.useState(false);
-  const [accountLoading, setAccountLoading] = React.useState(false);
-  const [account, setAccount] = React.useState(Object.create(null));
-  const accountId = '/Accounts/JQ2U2j0TF7okzqqZOy4I';
-  const fetchAccount = React.useCallback(async () => {
-    try {
-      setAccountLoading(true);
-      const docRef = doc(db, accountId);
-      const docSnap = await getDoc(docRef);
-      const data = {
-        id: '/' + docSnap.ref.path,
-        uid: docSnap.id,
-        ...docSnap.data(),
-      };
-      setAccountLoading(false);
-      setAccount(data);
-      localStorage.setItem('account', JSON.stringify(data));
-    } catch (e) {
-      console.log(e);
-      setAccountLoading(false);
-      message.error('Error fetching subscribers list :(');
-    }
-  }, []);
+  const account = JSON.parse(localStorage.getItem('account'));
   const fetchSubscribers = React.useCallback(async () => {
     try {
       setSubscribersLoading(true);
       const q = query(
-        collection(db, `${accountId}/subscribers`),
+        collection(db, `${account.id}/subscribers`),
         orderBy('created_at', 'desc'),
         limit(5),
       );
@@ -74,8 +35,7 @@ const Home = () => {
   }, []);
   React.useEffect(() => {
     fetchSubscribers();
-    fetchAccount();
-  }, [fetchSubscribers, fetchAccount]);
+  }, [fetchSubscribers]);
 
   return (
     <div>

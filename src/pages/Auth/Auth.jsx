@@ -1,7 +1,7 @@
 import React from 'react';
 import './Auth.css';
 import { Input, Row, Col, Form, Button, Typography, message } from 'antd';
-import { useNavigate, redirect } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { auth } from 'lib/firebase';
 

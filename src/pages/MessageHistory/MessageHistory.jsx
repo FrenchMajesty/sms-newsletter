@@ -7,7 +7,7 @@ import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from 'lib/firebase';
 
 const MessageHistory = () => {
-  const accountId = '/Accounts/JQ2U2j0TF7okzqqZOy4I';
+  const account = JSON.parse(localStorage.getItem('account'));
   const [loading, setLoading] = React.useState(false);
   const [msgHistory, setMsgHistory] = React.useState([]);
   const renderTimestampText = (scheduled_at) => {
@@ -24,7 +24,7 @@ const MessageHistory = () => {
     try {
       setLoading(true);
       const q = query(
-        collection(db, `${accountId}/history`),
+        collection(db, `${account.id}/history`),
         orderBy('scheduled_at', 'desc'),
       );
       const querySnapshot = await getDocs(q);
@@ -40,7 +40,7 @@ const MessageHistory = () => {
       setLoading(false);
       message.error('Error fetching message history');
     }
-  }, []);
+  }, [account.id]);
   React.useEffect(() => {
     fetchHistory();
   }, [fetchHistory]);

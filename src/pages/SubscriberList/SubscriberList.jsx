@@ -1,30 +1,17 @@
 // Create a new page in src/pages/SubscriberList/SubscriberList.jsx similar to Home.jsx
 import React from 'react';
 import './SubscriberList.css';
-import {
-  Input,
-  Row,
-  Col,
-  Form,
-  Button,
-  Typography,
-  Space,
-  DatePicker,
-  TimePicker,
-  message,
-  List,
-} from 'antd';
+import { Input, Row, Col, Button, Space, message, List } from 'antd';
 import ParseToHTML from 'html-react-parser';
 import { debounce } from 'lodash';
 import moment from 'moment';
 import HeaderBar from '../../components/HeaderBar/HeaderBar';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from 'lib/firebase';
-import algoliasearch from 'algoliasearch/lite';
 import useAlgolia from 'use-algolia';
-import { InstantSearch, SearchBox } from 'react-instantsearch-hooks-web';
 
+// TODO: Move to .env
 const REACT_APP_ALGOLIA_APP_ID = 'F7IPCQJFCH';
 const REACT_APP_ALGOLIA_SEARCH_KEY = '11700f6a95e0d3da5899191bb02bd2fd';
 const REACT_APP_ALGOLIA_INDEX = 'dev_subscriberlist';
@@ -39,9 +26,8 @@ const SubscriberList = () => {
     REACT_APP_ALGOLIA_INDEX,
   );
   const { hits, loading: searchLoading, request } = searchState;
-  console.log(searchState);
+  const account = JSON.parse(localStorage.getItem('account'));
   const onSearchChange = (e) => {
-    // TODO: Debounce this
     triggerSearch(e.target.value);
   };
   const triggerSearch = React.useRef(
@@ -50,13 +36,12 @@ const SubscriberList = () => {
       requestDispatch({ query });
     }, 200),
   ).current;
-  const userAccount = JSON.parse(localStorage.getItem('account') || '{}');
   const fetchSubscribers = React.useCallback(async () => {
     try {
       setLoading(true);
       //  TODO: Remove hardcoded account ID
       const q = query(
-        collection(db, '/Accounts/JQ2U2j0TF7okzqqZOy4I/subscribers'),
+        collection(db, `${account.id}/subscribers`),
         orderBy('created_at', 'desc'),
         limit(qLimit),
       );
@@ -73,7 +58,7 @@ const SubscriberList = () => {
       setLoading(false);
       message.error('Error fetching subscribers list :(');
     }
-  }, [qLimit]);
+  }, [qLimit, account.id]);
   const formatPhoneNumber = (number) => {
     const cleaned = ('' + number).replace(/\D/g, '');
     const match = cleaned.match(/^(1|)?(\d{3})(\d{3})(\d{4})$/);
@@ -84,8 +69,8 @@ const SubscriberList = () => {
     return 'N/A';
   };
   const hasMoreToLoad = React.useMemo(() => {
-    return userAccount ? userAccount.subscribers_count > data.length : false;
-  }, [userAccount, data.length]);
+    return account.subscribers_count > data.length;
+  }, [account, data.length]);
   const isSearching = request.query && request.query.length > 2;
   const onLoadMore = () => {
     setLimit(qLimit + 20);
@@ -141,7 +126,7 @@ const SubscriberList = () => {
           <List
             itemLayout="horizontal"
             dataSource={hits}
-            loading={loading}
+            loading={searchLoading}
             loadMore={loadMore}
             locale={{ emptyText: 'No results found' }}
             className="subscriber-list"
