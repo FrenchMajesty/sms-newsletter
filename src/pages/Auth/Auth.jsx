@@ -1,17 +1,53 @@
 import React from 'react';
 import './Auth.css';
-import { Input, Row, Col, Form, Button, Typography } from 'antd';
+import { Input, Row, Col, Form, Button, Typography, message } from 'antd';
 import { useNavigate, redirect } from 'react-router-dom';
+import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+import { auth } from 'lib/firebase';
 
 const Auth = () => {
   const navigate = useNavigate();
-  const onSubmit = (values) => {
-    console.log(values);
-    //redirect('/code-verify');
-    navigate('/code-verify');
+  const [form] = Form.useForm();
+  const [loading, setLoading] = React.useState(false);
+  const [ready, setReady] = React.useState(false);
+  const onSignInSubmit = async (values) => {
+    const phone_number =
+      '+1' + values.phone_number.replace('+1', '').replace(/\D/g, '');
+    const appVerifier = window.recaptchaVerifier;
+    try {
+      setLoading(true);
+      const result = await signInWithPhoneNumber(
+        auth,
+        phone_number,
+        appVerifier,
+      );
+      window.confirmationResult = result;
+      setLoading(false);
+      navigate('/code-verify');
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+      message.error(
+        'Error while sending SMS. Please check your number and try again.',
+      );
+    }
   };
-
-  // Create a memo to return morning, afternoon, evening, or night
+  const initAuth = React.useCallback(() => {
+    window.recaptchaVerifier = new RecaptchaVerifier(
+      'sign-in-button',
+      {
+        size: 'invisible',
+        callback: (response) => {
+          onSignInSubmit(form.getFieldsValue());
+        },
+      },
+      auth,
+    );
+    window.recaptchaVerifier.render().then((widgetId) => {
+      window.recaptchaWidgetId = widgetId;
+      setReady(true);
+    });
+  }, []);
   const hours = new Date().getHours();
   const getGreeting = React.useMemo(() => {
     if (hours < 12) {
@@ -24,10 +60,17 @@ const Auth = () => {
 
     return 'night';
   }, [hours]);
+  React.useEffect(() => {
+    initAuth();
+  }, [initAuth]);
 
   return (
     <div>
-      <Typography.Title level={1} className="center-text">
+      <Typography.Title
+        level={1}
+        className="center-text"
+        style={{ marginTop: 32 }}
+      >
         SMS Newsletter
       </Typography.Title>
       <div className="welcome-msg">
@@ -36,22 +79,28 @@ const Auth = () => {
           Use your number to sign in
         </Typography.Title>
       </div>
-      <Form onFinish={onSubmit}>
-        <Row gutter={16} justify="center">
+      <Form form={form} disabled={!ready}>
+        <Row gutter={0} justify="center" style={{ margin: 0 }}>
           <Col span={20}>
             <Form.Item
               label="Phone number"
               name="phone_number"
               required
               rules={[
-                { required: true, message: 'Please input your phone number' },
+                { required: true, message: 'Please enter your phone number' },
               ]}
             >
-              <Input placeholder="(900) 456-9090" size="large" maxLength={10} />
+              <Input placeholder="(900) 456-9090" size="large" maxLength={17} />
             </Form.Item>
           </Col>
           <Form.Item wrapperCol={{ span: 16 }}>
-            <Button type="primary" htmlType="submit">
+            <Button
+              id="sign-in-button"
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              disabled={!ready}
+            >
               Send code
             </Button>
           </Form.Item>
