@@ -31,11 +31,11 @@ import { db } from 'lib/firebase';
 
 // TODO: Move to .env
 const REACT_APP_ALGOLIA_APP_ID = 'F7IPCQJFCH';
-const REACT_APP_ALGOLIA_SEARCH_KEY = '11700f6a95e0d3da5899191bb02bd2fd';
+const REACT_APP_ALGOLIA_CRUD_KEY = '96c27fd2632ad6bde2537b172d81c2ee';
 const REACT_APP_ALGOLIA_INDEX = 'dev_subscriberlist';
 const algoliaClient = algoliasearch(
   REACT_APP_ALGOLIA_APP_ID,
-  REACT_APP_ALGOLIA_SEARCH_KEY,
+  REACT_APP_ALGOLIA_CRUD_KEY,
 );
 const index = algoliaClient.initIndex(REACT_APP_ALGOLIA_INDEX);
 
@@ -128,8 +128,11 @@ const EditSubscriber = () => {
   const onDelete = async () => {
     try {
       setDeleting(true);
-      await deleteDoc(doc(db, `${account.id}/subscribers`, id));
       await index.deleteObject(id);
+      await deleteDoc(doc(db, `${account.id}/subscribers`, id));
+      await updateDoc(doc(db, account.id), {
+        subscribers_count: increment(-1),
+      });
       setDeleting(false);
       message.success('Subscriber removed successfully');
       navigate('/subscribers');
@@ -225,7 +228,7 @@ const EditSubscriber = () => {
                   {id ? (
                     <Popconfirm
                       title={`Remove ${
-                        form.getFieldValue('name') || 'Subscriber'
+                        '"' + form.getFieldValue('name') + '"' || 'Subscriber'
                       }`}
                       description="Are you sure to remove from your list?"
                       onConfirm={onDelete}
