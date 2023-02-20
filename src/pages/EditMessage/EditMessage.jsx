@@ -11,6 +11,7 @@ import {
   message,
 } from 'antd';
 import moment from 'moment';
+import dayjs from 'dayjs';
 import HeaderBar from '../../components/HeaderBar/HeaderBar';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
@@ -61,8 +62,8 @@ const EditMessage = () => {
       if (scheduledMsg) {
         form.setFieldsValue({
           message: scheduledMsg.message,
-          date: moment(scheduledMsg.scheduled_at),
-          time: moment(scheduledMsg.scheduled_at),
+          date: dayjs(scheduledMsg.scheduled_at),
+          //time: dayjs(scheduledMsg.scheduled_at), BUGGED
         });
       }
     } catch (e) {

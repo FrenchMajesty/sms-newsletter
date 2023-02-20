@@ -11,7 +11,6 @@ import {
   List,
   message,
 } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
 import HeaderBar from '../../components/HeaderBar/HeaderBar';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
