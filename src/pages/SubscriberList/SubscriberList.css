@@ -6,3 +6,10 @@
 .subscriber-page {
   padding-bottom: 50px;
 }
+
+/** Create a blue highlighter style for this text **/
+.subscriber-list em {
+  background-color: #e6f7ff;
+  color: #1890ff;
+  font-style: normal;
+}
