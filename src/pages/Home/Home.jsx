@@ -107,7 +107,9 @@ const Home = () => {
           </Space>
         </Row>
         <Row gutter={16} style={{ marginTop: 24 }}>
-          <Typography.Title level={3}>Subscribers</Typography.Title>
+          <Typography.Title level={3}>
+            {account.subscribers_count} Subscribers
+          </Typography.Title>
           <Col span={24}>
             <List
               itemLayout="horizontal"
