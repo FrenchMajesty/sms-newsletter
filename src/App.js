@@ -44,7 +44,7 @@ function App() {
   React.useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        loadUserAccount(user.uid);
+        setTimeout(() => loadUserAccount(user.uid), 3 * 1000);
       }
     });
   }, [loadUserAccount]);
