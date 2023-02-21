@@ -2,6 +2,7 @@ import { logger, pubsub, https, config } from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import Twilio from 'twilio';
 import moment from 'moment';
+import { allowCors } from './helper';
 
 admin.initializeApp();
 const accountSid = config().twilio.account_sid;
@@ -12,6 +13,9 @@ const twilioClient = Twilio(accountSid, authToken);
 // // https://firebase.google.com/docs/functions/typescript
 //
 export const helloWorld = https.onRequest((request, response) => {
+  const isPreflight = allowCors(request, response);
+  if (isPreflight) return;
+
   logger.info('Hello logs!', { structuredData: true });
   response.send('Hello from Firebase!');
 });
@@ -32,7 +36,7 @@ export const sendScheduledMessages = pubsub
       const now = moment();
       const accounts = await admin
         .firestore()
-        .collection('accounts')
+        .collection('Accounts')
         .where('scheduled.scheduled_at', '<=', now.valueOf())
         .where(
           'scheduled.scheduled_at',
@@ -49,7 +53,9 @@ export const sendScheduledMessages = pubsub
         const { message, method, scheduled_at } = accountData.scheduled;
         const subscribers = await account.ref.collection('subscribers').get();
         const subscriberIds = subscribers.docs.map((doc) => '/' + doc.ref.path);
-        logger.info(`Sending message to ${subscriberIds.length} subscribers.`);
+        logger.info(
+          `Sending message to ${subscriberIds.length} subscribers for ${accountData.id}.`,
+        );
         subscribers.forEach(async (subscriber) => {
           //const subscriberData = subscriber.data();
           //const phoneNumber = subscriberData.phoneNumber;
