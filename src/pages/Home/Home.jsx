@@ -35,6 +35,10 @@ const Home = () => {
     }
   }, []);
   const deliveryMethod = React.useMemo(() => {
+    if (!account.scheduled) {
+      return '';
+    }
+
     const { method } = account.scheduled;
     if (method === 'sms') {
       return 'SMS';
