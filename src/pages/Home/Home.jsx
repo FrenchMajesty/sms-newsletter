@@ -4,6 +4,7 @@ import { Row, Col, Button, Typography, Space, List, message } from 'antd';
 import HeaderBar from '../../components/HeaderBar/HeaderBar';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
+import { startCase } from 'lodash';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from 'lib/firebase';
 
@@ -33,6 +34,14 @@ const Home = () => {
       message.error('Error fetching subscribers list :(');
     }
   }, []);
+  const deliveryMethod = React.useMemo(() => {
+    const { method } = account.scheduled;
+    if (method === 'sms') {
+      return 'SMS';
+    } else {
+      return startCase(method).replace(/\s/g, '');
+    }
+  }, [account.scheduled]);
   React.useEffect(() => {
     fetchSubscribers();
   }, [fetchSubscribers]);
@@ -46,9 +55,18 @@ const Home = () => {
           <Col span={24} className="message-box">
             {account.scheduled ? (
               <Space direction="vertical">
-                <Row>
-                  <Typography.Text>{account.scheduled.message}</Typography.Text>
-                </Row>
+                <div>
+                  <Row>
+                    <Typography.Text className="delivery-method">
+                      {deliveryMethod}
+                    </Typography.Text>
+                  </Row>
+                  <Row>
+                    <Typography.Text>
+                      {account.scheduled.message}
+                    </Typography.Text>
+                  </Row>
+                </div>
                 <Row>
                   <Typography.Text type="secondary">
                     {moment(account.scheduled.scheduled_at).format(
@@ -65,7 +83,9 @@ const Home = () => {
           </Col>
           <Space style={{ marginTop: 16 }}>
             <Link to="/message/create">
-              <Button type="primary">Schedule</Button>
+              <Button type="primary">
+                {account.scheduled ? 'Edit' : 'Schedule'}
+              </Button>
             </Link>
             <Link to="/message/history">
               <Button>View history</Button>

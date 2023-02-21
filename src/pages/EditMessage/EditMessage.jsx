@@ -9,6 +9,7 @@ import {
   DatePicker,
   TimePicker,
   message,
+  Select,
 } from 'antd';
 import moment from 'moment';
 import dayjs from 'dayjs';
@@ -27,7 +28,9 @@ const EditMessage = () => {
   const onSubmit = async (values) => {
     const { message, date, time } = values;
     const scheduledAt = moment(
-      date.format('YYYY-MM-DD') + ' ' + time.format('hh:mm: A'),
+      date.format('YYYY-MM-DD') +
+        ' ' +
+        moment(time, 'HH:mm').format('hh:mm: A'),
     );
     if (moment().add(10, 'minutes').isAfter(scheduledAt)) {
       messageApi.error('Scheduled time must be at least 10 minutes from now');
@@ -39,9 +42,11 @@ const EditMessage = () => {
       await updateDoc(docRef, {
         scheduled: {
           message,
+          method: values.method,
           scheduled_at: scheduledAt.valueOf(),
         },
       });
+      // TODO: Update account in localStorage
       messageApi.success('Message scheduled successfully');
       navigate('/home');
     } catch (e) {
@@ -61,7 +66,8 @@ const EditMessage = () => {
         form.setFieldsValue({
           message: scheduledMsg.message,
           date: dayjs(scheduledMsg.scheduled_at),
-          //time: dayjs(scheduledMsg.scheduled_at), BUGGED
+          method: scheduledMsg.method,
+          time: dayjs(scheduledMsg.scheduled_at).format('HH:mm'), // TODO: BUGGED
         });
       }
     } catch (e) {
@@ -69,11 +75,7 @@ const EditMessage = () => {
       setLoading(false);
       message.error('Error fetching subscribers list :(');
     }
-  }, [form]);
-  // Write function to go back to previous page
-  const goBack = () => {
-    console.log('go back');
-  };
+  }, [form, account.id]);
   const disabledDate = (current) => {
     return current && current < moment().startOf('day');
   };
@@ -110,6 +112,26 @@ const EditMessage = () => {
             </Col>
           </Row>
           <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item
+                label="Delivery method"
+                name="method"
+                required
+                initialValue={msg ? msg.method : ''}
+                rules={[{ required: true, message: 'Method is required' }]}
+              >
+                <Select
+                  placeholder="Where the message will be delivered"
+                  style={{ width: '100%' }}
+                  options={[
+                    { label: 'SMS', value: 'sms' },
+                    { label: 'WhatsApp', value: 'whats_app' },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
             <Col span={12}>
               <Form.Item
                 label="Date"
@@ -136,16 +158,9 @@ const EditMessage = () => {
                 initialValue={msg ? msg.scheduled_at : ''}
                 rules={[
                   { required: true, message: 'Delivery time is required' },
-                  { type: 'date', message: 'The time is incorrect' },
                 ]}
               >
-                <TimePicker
-                  placeholder="7:30AM"
-                  format="hh:mm A"
-                  minuteStep={10}
-                  use12Hours
-                  style={{ width: '100%' }}
-                />
+                <Input type="time" style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>

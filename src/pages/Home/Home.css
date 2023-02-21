@@ -1,11 +1,12 @@
 .home-container {
   margin-top: 50px;
   padding: 0 20px;
+  padding-bottom: 50px;
   text-align: initial;
 }
 
 .message-box {
-  padding: 16px;
+  padding: 16px !important;
   border-radius: 4px;
   background-color: #ddeaf8;
 }
@@ -19,4 +20,10 @@
 
 .empty-list {
   color: #4f4f4f;
+}
+
+.delivery-method {
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 0.8rem;
+  margin: 0;
 }
