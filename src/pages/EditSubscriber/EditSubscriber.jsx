@@ -51,6 +51,7 @@ const EditSubscriber = () => {
   const account = JSON.parse(localStorage.getItem('account'));
   const onFinish = async (values) => {
     try {
+      setLoading(true);
       values.phone_number = '+1' + values.phone_number.replace('+1', '');
       if (!(await validateNumberIsUnique(values.phone_number))) {
         message.error('This phone number is already registered');
@@ -65,6 +66,7 @@ const EditSubscriber = () => {
       } else {
         await updateSubscriber(values);
       }
+      setLoading(false);
       message.success(
         `Subscriber ${id ? 'updated' : 'created'} successfully`,
         2,
@@ -74,6 +76,7 @@ const EditSubscriber = () => {
       );
     } catch (error) {
       console.log(error);
+      setLoading(false);
       message.error('Sorry, something went wrong :(');
     }
   };
