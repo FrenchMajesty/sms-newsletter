@@ -125,7 +125,7 @@ const EditMessage = () => {
                   style={{ width: '100%' }}
                   options={[
                     { label: 'SMS', value: 'sms' },
-                    { label: 'WhatsApp', value: 'whats_app' },
+                    /*{ label: 'WhatsApp', value: 'whats_app' }, TODO: Disable WhatsApp for now */
                   ]}
                 />
               </Form.Item>

@@ -13,7 +13,7 @@ const MessageHistory = () => {
   const renderTimestampText = (scheduled_at) => {
     const readableTime = moment(scheduled_at).format('MMM Do, YYYY [@] h:mm A');
     if (moment(scheduled_at).isBefore(moment())) {
-      return `Sent at ${readableTime}`;
+      return `Sent on ${readableTime}`;
     }
     return `Scheduled for ${readableTime}`;
   };
