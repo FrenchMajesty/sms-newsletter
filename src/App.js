@@ -4,7 +4,7 @@ import { Outlet, useNavigate } from 'react-router';
 import { onAuthStateChanged } from 'firebase/auth';
 import { getDocs, query, collection, where, limit } from 'firebase/firestore';
 import { auth, db } from 'lib/firebase';
-import { message } from 'antd';
+import { message, ConfigProvider } from 'antd';
 
 function App() {
   const navigate = useNavigate();
@@ -50,7 +50,15 @@ function App() {
   }, [loadUserAccount]);
   return (
     <div className="App">
-      <Outlet />
+      <ConfigProvider
+        theme={{
+          token: {
+            fontSize: 16,
+          },
+        }}
+      >
+        <Outlet />
+      </ConfigProvider>
     </div>
   );
 }
