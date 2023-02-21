@@ -1,21 +1,54 @@
 import React from 'react';
 import './Auth.css';
 import { Input, Row, Col, Form, Button, Typography, message } from 'antd';
-import { useNavigate } from 'react-router-dom';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
-import { auth } from 'lib/firebase';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { auth, db } from 'lib/firebase';
+import { useNavigate } from 'react-router';
 
 const Auth = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = React.useState(false);
   const [ready, setReady] = React.useState(false);
+  const [numberRegistered, setNumberRegistered] = React.useState(false);
+  const checkIfUserExists = async (phoneNumber) => {
+    try {
+      const querySnapshot = await getDocs(
+        query(
+          collection(db, 'Accounts'),
+          where('phone_number', '==', phoneNumber),
+        ),
+      );
+      return !querySnapshot.empty;
+    } catch (e) {
+      return false;
+    }
+  };
+  const validatePhoneNumber = (number) => {
+    const phone_number = number.replace('+1', '').replace(/\D/g, '');
+    return phone_number.length === 10;
+  };
   const onSignInSubmit = async (values) => {
-    const phone_number =
-      '+1' + values.phone_number.replace('+1', '').replace(/\D/g, '');
+    let { phone_number } = values;
+    phone_number = '+1' + phone_number.replace('+1', '').replace(/\D/g, '');
+    if (!validatePhoneNumber(phone_number)) {
+      message.error('Invalid phone number. Please try again.');
+      return;
+    }
     const appVerifier = window.recaptchaVerifier;
     try {
       setLoading(true);
+      const userExists = await checkIfUserExists(phone_number);
+      if (!userExists) {
+        message.error(
+          'This phone number is not registered. Please sign up first.',
+          2,
+          () => window.location.replace('https://tally.so/r/m6Leko'),
+        );
+        setLoading(false);
+        return;
+      }
       const result = await signInWithPhoneNumber(
         auth,
         phone_number,
