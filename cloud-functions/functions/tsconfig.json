@@ -1,15 +1,27 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "checkJs": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "experimentalDecorators": true,
     "outDir": "lib",
     "sourceMap": true,
+    "lib": ["esnext"],
     "strict": true,
-    "target": "es2017"
+    "target": "es6",
+    "baseUrl": "./src"
   },
+  "baseUrl": "./src",
   "compileOnSave": true,
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }
