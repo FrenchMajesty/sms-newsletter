@@ -58,7 +58,7 @@ const Home = () => {
     const interval = setInterval(() => {
       const latest = JSON.parse(localStorage.getItem('account'));
       setAccount(latest);
-    }, 1000);
+    }, 500);
     return () => clearInterval(interval);
   }, []);
 
