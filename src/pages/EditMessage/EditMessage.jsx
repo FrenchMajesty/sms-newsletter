@@ -30,11 +30,7 @@ const EditMessage = () => {
   const navigate = useNavigate();
   const onSubmit = async (values) => {
     const { message, date, time } = values;
-    const scheduledAt = moment(
-      date.format('YYYY-MM-DD') +
-        ' ' +
-        moment(time, 'HH:mm').format('hh:mm: A'),
-    );
+    const scheduledAt = moment(date.format('YYYY-MM-DD') + ' ' + time);
     if (moment().add(10, 'minutes').isAfter(scheduledAt)) {
       messageApi.error('Scheduled time must be at least 10 minutes from now');
       return;
