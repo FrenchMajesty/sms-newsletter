@@ -59,10 +59,10 @@ const EditMessage = () => {
       setLoading(true);
       const docRef = doc(db, account.id);
       const docSnap = await getDoc(docRef);
-      const scheduledMsg = docSnap.data().scheduled || {};
+      const scheduledMsg = docSnap.data().scheduled || null;
       setLoading(false);
-      setMessage(scheduledMsg);
       if (scheduledMsg) {
+        setMessage(scheduledMsg);
         form.setFieldsValue({
           message: scheduledMsg.message,
           date: dayjs(scheduledMsg.scheduled_at),
@@ -86,7 +86,7 @@ const EditMessage = () => {
   return (
     <div>
       {contextHolder}
-      <HeaderBar title={`${msg.message ? 'Edit' : 'Schedule'} Message`} />
+      <HeaderBar title={`${msg ? 'Edit' : 'Schedule'} Message`} />
       <Col span={24} className="home-container">
         <Form form={form} onFinish={onSubmit}>
           <Row gutter={16}>
