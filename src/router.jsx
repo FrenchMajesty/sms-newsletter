@@ -62,6 +62,10 @@ const router = createBrowserRouter([
     //loader: rootLoader,
     children: [
       {
+        path: '/',
+        element: <Navigate to="/home" replace />,
+      },
+      {
         path: '/login',
         element: (
           <RestrictGuest>
