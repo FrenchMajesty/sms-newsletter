@@ -119,7 +119,7 @@ const Home = () => {
                 <List.Item>
                   <List.Item.Meta
                     title={
-                      <Link to={`/subscribers/${item.id}`}>{item.name}</Link>
+                      <Link to={`/subscribers/${item.uid}`}>{item.name}</Link>
                     }
                     description={`Since ${moment(item.created_at).format(
                       'MMM Do, YYYY',
