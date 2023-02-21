@@ -14,7 +14,9 @@ const { REACT_APP_NAME: APP_NAME } = process.env;
 const Home = () => {
   const [recentSubscribers, setRecentSubscribers] = React.useState([]);
   const [subscribersLoading, setSubscribersLoading] = React.useState(false);
-  const account = JSON.parse(localStorage.getItem('account'));
+  const [account, setAccount] = React.useState(
+    JSON.parse(localStorage.getItem('account')),
+  );
   const fetchSubscribers = React.useCallback(async () => {
     try {
       setSubscribersLoading(true);
@@ -52,6 +54,13 @@ const Home = () => {
   React.useEffect(() => {
     fetchSubscribers();
   }, [fetchSubscribers]);
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      const latest = JSON.parse(localStorage.getItem('account'));
+      setAccount(latest);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div>
