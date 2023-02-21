@@ -53,6 +53,10 @@ const EditSubscriber = () => {
         message.error('This phone number is already registered');
         return;
       }
+      if (!validatePhoneNumber(values.phone_number)) {
+        message.error('Please enter a valid phone number');
+        return;
+      }
       if (!id) {
         await createSubscriber(values);
       } else {
@@ -69,6 +73,10 @@ const EditSubscriber = () => {
       console.log(error);
       message.error('Sorry, something went wrong :(');
     }
+  };
+  const validatePhoneNumber = (number) => {
+    const phone_number = number.replace('+1', '').replace(/\D/g, '');
+    return phone_number.length === 10;
   };
   const updateSubscriber = async (values) => {
     const data = {
