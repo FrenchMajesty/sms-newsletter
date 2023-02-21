@@ -18,11 +18,14 @@ import { Link } from 'react-router-dom';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from 'lib/firebase';
 import useAlgolia from 'use-algolia';
+import { Helmet } from 'react-helmet';
 
-// TODO: Move to .env
-const REACT_APP_ALGOLIA_APP_ID = 'F7IPCQJFCH';
-const REACT_APP_ALGOLIA_SEARCH_KEY = '11700f6a95e0d3da5899191bb02bd2fd';
-const REACT_APP_ALGOLIA_INDEX = 'dev_subscriberlist';
+const {
+  REACT_APP_ALGOLIA_APP_ID,
+  REACT_APP_ALGOLIA_SEARCH_KEY,
+  REACT_APP_ALGOLIA_INDEX,
+  REACT_APP_NAME: APP_NAME,
+} = process.env;
 
 const SubscriberList = () => {
   const [loading, setLoading] = React.useState(false);
@@ -111,6 +114,10 @@ const SubscriberList = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Subscriber List | {APP_NAME}</title>
+        <meta name="description" content="Manage your subscribers" />
+      </Helmet>
       <HeaderBar title="Subscriber List" />
       <Col span={24} className="home-container subscriber-page">
         <Typography.Title level={4}>

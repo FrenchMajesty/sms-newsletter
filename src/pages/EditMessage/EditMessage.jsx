@@ -17,6 +17,9 @@ import HeaderBar from '../../components/HeaderBar/HeaderBar';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from 'lib/firebase';
+import { Helmet } from 'react-helmet';
+
+const { REACT_APP_NAME: APP_NAME } = process.env;
 
 const EditMessage = () => {
   const [form] = Form.useForm();
@@ -86,6 +89,15 @@ const EditMessage = () => {
   return (
     <div>
       {contextHolder}
+      <Helmet>
+        <title>
+          {msg ? 'Edit' : 'Schedule'} Message | {APP_NAME}
+        </title>
+        <meta
+          name="description"
+          content="Schedule or edit the next message to be sent out"
+        />
+      </Helmet>
       <HeaderBar title={`${msg ? 'Edit' : 'Schedule'} Message`} />
       <Col span={24} className="home-container">
         <Form form={form} onFinish={onSubmit}>

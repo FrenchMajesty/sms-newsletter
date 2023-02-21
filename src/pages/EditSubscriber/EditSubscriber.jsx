@@ -28,11 +28,14 @@ import {
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import algoliasearch from 'algoliasearch';
 import { db } from 'lib/firebase';
+import { Helmet } from 'react-helmet';
 
-// TODO: Move to .env
-const REACT_APP_ALGOLIA_APP_ID = 'F7IPCQJFCH';
-const REACT_APP_ALGOLIA_CRUD_KEY = '96c27fd2632ad6bde2537b172d81c2ee';
-const REACT_APP_ALGOLIA_INDEX = 'dev_subscriberlist';
+const {
+  REACT_APP_ALGOLIA_APP_ID,
+  REACT_APP_ALGOLIA_CRUD_KEY,
+  REACT_APP_ALGOLIA_INDEX,
+  REACT_APP_NAME: APP_NAME,
+} = process.env;
 const algoliaClient = algoliasearch(
   REACT_APP_ALGOLIA_APP_ID,
   REACT_APP_ALGOLIA_CRUD_KEY,
@@ -194,6 +197,15 @@ const EditSubscriber = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>
+          {id ? 'Edit' : 'Add'} Subscriber | {APP_NAME}
+        </title>
+        <meta
+          name="description"
+          content="Add or edit a subscriber to your newsletter"
+        />
+      </Helmet>
       <HeaderBar title={`${id ? 'Edit' : 'Add'} Subscriber`} />
       <Row style={{ padding: 10 }}>
         <Button onClick={goBack} icon={<ArrowLeftOutlined />}>

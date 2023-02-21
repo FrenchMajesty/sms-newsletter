@@ -5,6 +5,9 @@ import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { auth, db } from 'lib/firebase';
 import { useNavigate } from 'react-router';
+import { Helmet } from 'react-helmet';
+
+const { REACT_APP_NAME: APP_NAME } = process.env;
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -99,6 +102,10 @@ const Auth = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Login | {APP_NAME}</title>
+        <meta name="description" content="Login to your account" />
+      </Helmet>
       <Typography.Title
         level={1}
         className="center-text"

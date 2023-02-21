@@ -5,6 +5,9 @@ import moment from 'moment';
 import HeaderBar from '../../components/HeaderBar/HeaderBar';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import { db } from 'lib/firebase';
+import { Helmet } from 'react-helmet';
+
+const { REACT_APP_NAME: APP_NAME } = process.env;
 
 const MessageHistory = () => {
   const account = JSON.parse(localStorage.getItem('account'));
@@ -47,6 +50,10 @@ const MessageHistory = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Message History | {APP_NAME}</title>
+        <meta name="description" content="View your message history" />
+      </Helmet>
       <HeaderBar title="Message History" />
       <Col span={24} className="home-container">
         <Space direction="vertical" style={{ width: '100%' }}>

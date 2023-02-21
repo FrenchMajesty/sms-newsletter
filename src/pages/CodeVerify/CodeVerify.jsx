@@ -12,6 +12,9 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore';
+import { Helmet } from 'react-helmet';
+
+const { REACT_APP_NAME: APP_NAME } = process.env;
 
 const CodeVerify = () => {
   const navigate = useNavigate();
@@ -60,6 +63,10 @@ const CodeVerify = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Verify Code | {APP_NAME}</title>
+        <meta name="description" content="Verify your access code" />
+      </Helmet>
       <Typography.Title
         level={1}
         className="center-text"

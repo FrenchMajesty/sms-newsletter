@@ -3,10 +3,13 @@ import './Home.css';
 import { Row, Col, Button, Typography, Space, List, message } from 'antd';
 import HeaderBar from '../../components/HeaderBar/HeaderBar';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import moment from 'moment';
 import { startCase } from 'lodash';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from 'lib/firebase';
+
+const { REACT_APP_NAME: APP_NAME } = process.env;
 
 const Home = () => {
   const [recentSubscribers, setRecentSubscribers] = React.useState([]);
@@ -52,6 +55,13 @@ const Home = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Home | {APP_NAME}</title>
+        <meta
+          name="description"
+          content="Home page where you can manage everything about your newsletter"
+        />
+      </Helmet>
       <HeaderBar />
       <Col span={24} className="home-container">
         <Row gutter={16}>
