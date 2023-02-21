@@ -41,6 +41,7 @@ const EditMessage = () => {
     }
 
     try {
+      setLoading(true);
       const docRef = doc(db, account.id);
       const data = {
         message,
@@ -54,10 +55,12 @@ const EditMessage = () => {
       const updated = { ...account };
       updated.scheduled = data;
       localStorage.setItem('account', JSON.stringify(updated));
+      setLoading(false);
       messageApi.success('Message scheduled successfully');
       navigate('/home');
     } catch (e) {
       console.log(e);
+      setLoading(false);
       messageApi.error('Error scheduling message :(');
     }
   };
