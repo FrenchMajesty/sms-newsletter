@@ -57,12 +57,12 @@ export const sendScheduledMessages = pubsub
           `Sending message to ${subscriberIds.length} subscribers for ${accountData.id}.`,
         );
         subscribers.forEach(async (subscriber) => {
-          //const subscriberData = subscriber.data();
-          //const phoneNumber = subscriberData.phoneNumber;
+          const subscriberData = subscriber.data();
+          const phoneNumber = subscriberData.phoneNumber;
           const twilioMessage = await twilioClient.messages.create({
             body: message,
             from: accountData.twilio_phone_number,
-            to: '+16822564413', //phoneNumber,
+            to: phoneNumber,
           });
           logger.info(twilioMessage);
         });
