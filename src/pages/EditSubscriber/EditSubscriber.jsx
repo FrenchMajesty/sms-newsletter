@@ -123,7 +123,10 @@ const EditSubscriber = () => {
         ...data,
       })
       .wait();
-    return Promise.all([setUid, updateCount, createAlgoliaObject]);
+    await Promise.all([setUid, updateCount, createAlgoliaObject]);
+    const updated = { ...account };
+    updated.subscribers_count += 1;
+    localStorage.setItem('account', JSON.stringify(updated));
   };
   const validateNumberIsUnique = async (number) => {
     try {
@@ -148,6 +151,9 @@ const EditSubscriber = () => {
       await updateDoc(doc(db, account.id), {
         subscribers_count: increment(-1),
       });
+      const updated = { ...account };
+      updated.subscribers_count -= 1;
+      localStorage.setItem('account', JSON.stringify(updated));
       setDeleting(false);
       message.success('Subscriber removed successfully');
       navigate('/subscribers');
