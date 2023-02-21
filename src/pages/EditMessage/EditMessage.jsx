@@ -42,14 +42,18 @@ const EditMessage = () => {
 
     try {
       const docRef = doc(db, account.id);
+      const data = {
+        message,
+        method: values.method,
+        scheduled_at: scheduledAt.valueOf(),
+      };
       await updateDoc(docRef, {
-        scheduled: {
-          message,
-          method: values.method,
-          scheduled_at: scheduledAt.valueOf(),
-        },
+        scheduled: data,
       });
       // TODO: Update account in localStorage
+      const updated = { ...account };
+      updated.scheduled = data;
+      localStorage.setItem('account', JSON.stringify(updated));
       messageApi.success('Message scheduled successfully');
       navigate('/home');
     } catch (e) {

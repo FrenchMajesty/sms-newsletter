@@ -105,6 +105,7 @@ const EditSubscriber = () => {
     };
     const ref = await addDoc(collection(db, `${account.id}/subscribers`), data);
     const setUid = updateDoc(doc(db, `${account.id}/subscribers`, ref.id), {
+      id: '/' + ref.path,
       uid: ref.id,
     });
     const updateCount = updateDoc(doc(db, account.id), {
