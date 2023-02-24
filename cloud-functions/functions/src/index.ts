@@ -58,13 +58,17 @@ export const sendScheduledMessages = pubsub
         );
         subscribers.forEach(async (subscriber) => {
           const subscriberData = subscriber.data();
-          const phoneNumber = subscriberData.phoneNumber;
-          const twilioMessage = await twilioClient.messages.create({
-            body: message,
-            from: accountData.twilio_phone_number,
-            to: phoneNumber,
-          });
-          logger.info(twilioMessage);
+          const phoneNumber = subscriberData.phone_number;
+          try {
+            const twilioMessage = await twilioClient.messages.create({
+              body: message,
+              from: accountData.twilio_phone_number,
+              to: phoneNumber,
+            });
+            logger.info(twilioMessage);
+          } catch (error) {
+            logger.error(error);
+          }
         });
         await account.ref.update({ scheduled: null });
         const historyRef = account.ref.collection('history').doc();
