@@ -7,7 +7,8 @@ import { auth, db } from 'lib/firebase';
 import { useNavigate } from 'react-router';
 import { Helmet } from 'react-helmet';
 
-const { REACT_APP_NAME: APP_NAME } = process.env;
+const { REACT_APP_NAME: APP_NAME, REACT_APP_WAITLIST_FORM: WAITLIST_FORM } =
+  process.env;
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ const Auth = () => {
         message.error(
           'This phone number is not registered. Please sign up first.',
           2,
-          () => window.location.replace('https://tally.so/r/m6Leko'),
+          () => window.location.replace(WAITLIST_FORM),
         );
         setLoading(false);
         return;
