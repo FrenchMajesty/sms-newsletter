@@ -1,0 +1,36 @@
+.page-container {
+  padding-bottom: 100px;
+}
+
+.hero-banner {
+  padding-top: 150px;
+  padding-bottom: 150px;
+  margin-bottom: 50px;
+  text-align: center;
+  background-color: #ddeaf8;
+}
+
+.price-analysis {
+  height: 200px;
+  background-color: rosybrown;
+}
+
+.emphasis {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.competitor-logo {
+  max-width: 150px;
+  min-height: 16px;
+}
+/* If we are on mobile */
+@media (max-width: 768px) {
+  .competitor-logo {
+    max-width: 18vw;
+  }
+}
+
+.form-input {
+  text-align: left;
+}

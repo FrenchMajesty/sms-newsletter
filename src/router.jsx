@@ -12,6 +12,7 @@ import ErrorPage from 'pages/ErrorPage/ErrorPage';
 import MessageHistory from 'pages/MessageHistory/MessageHistory';
 import { auth } from 'lib/firebase';
 import { message } from 'antd';
+import Landing from 'pages/Landing/Landing';
 
 const RestrictAuth = ({ children }) => {
   const location = useLocation();
@@ -63,7 +64,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <Navigate to="/home" replace />,
+        element: <Landing />,
       },
       {
         path: '/login',
