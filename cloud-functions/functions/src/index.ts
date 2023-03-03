@@ -99,4 +99,11 @@ export const resetUsageTracker = pubsub
     /*
       Update all the accounts to set the msg_count.current to 0
     */
+    const accounts = await admin.firestore().collection('Accounts').get();
+    logger.info(`Found ${accounts.size} accounts.`);
+    accounts.forEach(async (account) => {
+      await account.ref.update({
+        'msg_count.current': 0,
+      });
+    });
   });
