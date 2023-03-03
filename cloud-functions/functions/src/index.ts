@@ -1,13 +1,9 @@
-import { logger, pubsub, https, config } from 'firebase-functions';
+import { logger, pubsub, https } from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import Twilio from 'twilio';
 import moment from 'moment';
-import { allowCors } from './helper';
+import { allowCors, sendTwilioMessage } from './helper';
 
 admin.initializeApp();
-const accountSid = config().twilio.account_sid;
-const authToken = config().twilio.auth_token;
-const twilioClient = Twilio(accountSid, authToken);
 
 // // Start writing Firebase Functions
 // // https://firebase.google.com/docs/functions/typescript
@@ -25,14 +21,8 @@ export const sendScheduledMessages = pubsub
   .timeZone('America/Chicago')
   .onRun(async (context) => {
     logger.info('This will be run every 5 minutes!');
-    /*
-      Fetch all accounts where scheduled.scheduled_at was 5 minutes ago or less
-      Then fetch all the subscribers from the subcollection
-      Then send a message to each subscriber using Twilio
-      After that's done, update the account's scheduled to null
-      Then add a history entry to the account's history subcollection
-    */
     try {
+      // Fetch the accounts that have a scheduled message that needs to be sent
       const now = moment();
       const accounts = await admin
         .firestore()
@@ -45,6 +35,7 @@ export const sendScheduledMessages = pubsub
         )
         .get();
       logger.info(`Found ${accounts.size} accounts with scheduled messages.`);
+      let count = 0;
       accounts.forEach(async (account) => {
         const accountData = account.data();
         if (!accountData.scheduled) {
@@ -56,22 +47,34 @@ export const sendScheduledMessages = pubsub
         logger.info(
           `Sending message to ${subscriberIds.length} subscribers for ${accountData.id}.`,
         );
-        subscribers.forEach(async (subscriber) => {
-          const subscriberData = subscriber.data();
-          const phoneNumber = subscriberData.phone_number;
-          try {
-            const twilioMessage = await twilioClient.messages.create({
-              body: message,
-              from: accountData.twilio_phone_number,
-              to: phoneNumber,
-            });
-            logger.info(twilioMessage);
-          } catch (error) {
-            logger.error(error);
-          }
+
+        // Make the requests to send the messages for each subscriber
+        const promiseRequests: Promise<any>[] = [];
+        subscribers.forEach((subscriber) => {
+          const req = async () => {
+            const subscriberData = subscriber.data();
+            const phoneNumber = subscriberData.phone_number;
+            const success = await sendTwilioMessage(
+              phoneNumber,
+              message,
+              accountData.twilio_phone_number,
+            );
+            if (success) {
+              count++;
+            }
+          };
+          promiseRequests.push(req());
         });
-        await account.ref.update({ scheduled: null });
         const historyRef = account.ref.collection('history').doc();
+        await Promise.allSettled(promiseRequests);
+
+        // Clear the scheduled message and update the msg_count
+        const currentValue = accountData.msg_count?.current || 0;
+        await account.ref.update({
+          scheduled: null,
+          'msg_count.current': currentValue + count,
+        });
+        // Add a history entry
         await historyRef.set({
           id: '/' + historyRef.path,
           uid: historyRef.id,
@@ -79,10 +82,21 @@ export const sendScheduledMessages = pubsub
           method,
           scheduled_at,
           sent_at: new Date().valueOf(),
+          successful_delivery: count,
           recipients: subscriberIds,
         });
       });
     } catch (error) {
       logger.error(error);
     }
+  });
+
+export const resetUsageTracker = pubsub
+  .schedule('0 0 1 * *')
+  .timeZone('America/Chicago')
+  .onRun(async (context) => {
+    logger.info('This will be run at 12:00AM on the 1st of every month!');
+    /*
+      Update all the accounts to set the msg_count.current to 0
+    */
   });
