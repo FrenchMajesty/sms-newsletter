@@ -38,6 +38,20 @@ const EditMessage = () => {
 
     try {
       setLoading(true);
+      if (!isWithinUsageLimits()) {
+        messageApi.error(
+          'You have reached your monthly message limit. Upgrade your plan to send more messages.',
+        );
+        setLoading(false);
+        return;
+      }
+
+      if (account.subscribers_count === 0) {
+        messageApi.error('You have no subscribers to send messages to');
+        setLoading(false);
+        return;
+      }
+
       const docRef = doc(db, account.id);
       const data = {
         message,
@@ -47,7 +61,6 @@ const EditMessage = () => {
       await updateDoc(docRef, {
         scheduled: data,
       });
-      // TODO: Update account in localStorage
       const updated = { ...account };
       updated.scheduled = data;
       localStorage.setItem('account', JSON.stringify(updated));
@@ -59,6 +72,17 @@ const EditMessage = () => {
       setLoading(false);
       messageApi.error('Error scheduling message :(');
     }
+  };
+  const isWithinUsageLimits = () => {
+    if (!account.msg_count) return false;
+    const { max_monthly, current } = account.msg_count;
+    const newTotal = current + account.subscribers_count;
+
+    if (current >= max_monthly || newTotal >= max_monthly) {
+      return false;
+    }
+
+    return true;
   };
   const fetchScheduledMessage = React.useCallback(async () => {
     try {
@@ -103,7 +127,7 @@ const EditMessage = () => {
       </Helmet>
       <HeaderBar title={`${msg ? 'Edit' : 'Schedule'} Message`} />
       <Col span={24} className="home-container">
-        <Form form={form} onFinish={onSubmit}>
+        <Form form={form} onFinish={onSubmit} initialValues={{ method: 'sms' }}>
           <Row gutter={16}>
             <Col span={24}>
               <Form.Item

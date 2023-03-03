@@ -27,3 +27,15 @@
   font-size: 0.8rem;
   margin: 0;
 }
+
+.monthly-usage-medium {
+  color: #e3a800;
+}
+
+.monthly-usage-high {
+  color: #f44336;
+}
+
+.monthly-usage-max {
+  color: #f44336;
+}
