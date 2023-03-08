@@ -112,7 +112,7 @@ const Auth = () => {
         className="center-text"
         style={{ marginTop: 32 }}
       >
-        SMS Newsletter
+        {APP_NAME}
       </Typography.Title>
       <div className="welcome-msg">
         <Typography.Title level={3} className="center-text">

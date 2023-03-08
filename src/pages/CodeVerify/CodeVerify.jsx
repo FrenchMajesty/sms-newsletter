@@ -72,7 +72,7 @@ const CodeVerify = () => {
         className="center-text"
         style={{ marginTop: 32 }}
       >
-        SMS Newsletter
+        {APP_NAME}
       </Typography.Title>
       <Row style={{ padding: 10 }}>
         <Button onClick={goBack} icon={<ArrowLeftOutlined />}>
