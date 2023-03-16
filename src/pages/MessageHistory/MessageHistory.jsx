@@ -62,7 +62,10 @@ const MessageHistory = () => {
               hoverable={isFuture(item.scheduled_at)}
               className={isFuture(item.scheduled_at) ? 'future-message' : ''}
             >
-              <Typography.Title level={5}>{item.message}</Typography.Title>
+              <Typography.Text className="message-content">
+                {item.message}
+              </Typography.Text>
+              <br />
               <Typography.Text type="secondary">
                 {renderTimestampText(item.scheduled_at)}
               </Typography.Text>

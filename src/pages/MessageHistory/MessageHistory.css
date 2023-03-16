@@ -1,3 +1,8 @@
 .future-message {
   background-color: rgba(221, 234, 248, 0.4);
 }
+
+.message-content {
+  white-space: pre-line;
+  font-weight: 400;
+}
